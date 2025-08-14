@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlogSpot - Your Personal Blogging Platform</title>
+    <meta name="description" content="BlogSpot is a dynamic blogging platform allowing users to sign up, create, edit, and delete blog posts. Features include user authentication, comment sections, and responsive design for optimal viewing on all devices.">
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #166088;
+            --accent: #4fc3f7;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            margin-right: 10px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 1rem;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        nav ul li a:hover {
+            background-color: var(--secondary);
+        }
+
+        .auth-buttons button {
+            background-color: transparent;
+            border: 1px solid white;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .auth-buttons button:hover {
+            background-color: white;
+            color: var(--primary);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            color: var(--primary);
+        }
+
+        .close-btn {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .error-message {
+            color: var(--danger);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .main-content {
+            padding: 2rem 0;
+        }
+
+        .posts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .post-card {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .post-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .post-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .post-content {
+            padding: 1.5rem;
+        }
+
+        .post-title {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .post-meta {
+            display: flex;
+            justify-content: space-between;
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .post-author {
+            font-weight: bold;
+        }
+
+        .post-excerpt {
+            color: var(--dark);
+            margin-bottom: 1rem;
+        }
+
+        .post-actions {
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #eee;
+            padding-top: 1rem;
+        }
+
+        .comment-count {
+            display: flex;
+            align-items: center;
+            color: var(--primary);
+        }
+
+        .post-detail {
+            background-color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .post-detail h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .post-detail .post-meta {
+            margin-bottom: 1.5rem;
+        }
+
+        .post-detail .post-body {
+            margin-bottom: 2rem;
+        }
+
+        .post-detail .post-image {
+            width: 100%;
+            height: 400px;
+            margin-bottom: 1.5rem;
+            border-radius: 4px;
+        }
+
+        .comments-section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .comments-section h2 {
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+
+        .comment-form .form-group textarea {
+            min-height: 100px;
+        }
+
+        .comment-list {
+            margin-top: 2rem;
+        }
+
+        .comment {
+            border-bottom: 1px solid #eee;
+            padding: 1rem 0;
+        }
+
+        .comment:last-child {
+            border-bottom: none;
+        }
+
+        .comment-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        .comment-author {
+            font-weight: bold;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .comment-actions button {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+
+        .comment-actions button:hover {
+            text-decoration: underline;
+        }
+
+        .comment-text {
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem;
+            color: #6c757d;
+        }
+
+        .empty-state h2 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .user-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .user-dropdown-toggle {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            color: white;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background-color: white;
+            min-width: 200px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            padding: 0.5rem 0;
+            z-index: 10;
+            display: none;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+            color: var(--dark);
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .profile-info h2 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-bio {
+            color: #6c757d;
+        }
+
+        .create-post-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 90;
+            transition: all 0.3s;
+        }
+
+        .create-post-btn:hover {
+            background-color: var(--secondary);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .create-post-btn span {
+            font-size: 2rem;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            nav ul {
+                margin-top: 1rem;
+                flex-wrap: wrap;
+            }
+
+            .auth-buttons {
+                margin-top: 1rem;
+                align-self: flex-end;
+            }
+
+            .posts-container {
+                grid-template-columns: 1fr;
+            }
+
+            .post-detail .post-image {
+                height: 250px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            nav ul li {
+                margin: 0.25rem;
+            }
+
+            .modal-content {
+                padding: 1rem;
+                margin: 1rem;
+            }
+
+            .post-actions {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .comment-meta {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <div class="logo">
+                <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/be532efd-ff92-45e8-a748-5b39f5d0c4f3.png" alt="BlogSpot logo: a stylized open book with pages turning, in blue and white colors, representing knowledge sharing and blogging, minimalist design with subtle gradients" />
+                <span>BlogSpot</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#" id="home-link">Home</a></li>
+                    <li><a href="#" id="explore-link">Explore</a></li>
+                    <li><a href="#" id="about-link">About</a></li>
+                </ul>
+            </nav>
+            <div class="auth-buttons" id="auth-buttons">
+                <button id="login-btn">Login</button>
+                <button id="signup-btn" class="btn-primary">Sign Up</button>
+            </div>
+            <div class="user-dropdown" id="user-dropdown" style="display: none;">
+                <div class="user-dropdown-toggle" id="user-dropdown-toggle">
+                    <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/e67fe80c-bad4-4746-8f39-d7bdc9f5d853.png" alt="User avatar: a circular profile picture showing a friendly smiling face, with short hair, wearing casual clothes, in a professional yet approachable style, neutral background" class="user-avatar" id="user-avatar" />
+                    <span id="username-display"></span>
+                </div>
+                <div class="dropdown-menu" id="dropdown-menu">
+                    <a href="#" class="dropdown-item" id="profile-link">My Profile</a>
+                    <a href="#" class="dropdown-item" id="my-posts-link">My Posts</a>
+                    <a href="#" class="dropdown-item" id="logout-link">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content container">
+        <div id="home-page">
+            <h1>Latest Blog Posts</h1>
+            <div class="posts-container" id="posts-container">
+                <!-- Posts will be loaded here dynamically -->
+            </div>
+        </div>
+
+        <div id="post-detail-page" style="display: none;">
+            <div class="post-detail" id="post-detail">
+                <!-- Post detail will be loaded here -->
+            </div>
+            <div class="comments-section" id="comments-section">
+                <h2>Comments</h2>
+                <form class="comment-form" id="comment-form">
+                    <div class="form-group">
+                        <textarea id="comment-text" placeholder="Share your thoughts..." required></textarea>
+                        <div class="error-message" id="comment-error"></div>
+                    </div>
+                    <button type="submit" class="btn-primary">Post Comment</button>
+                </form>
+                <div class="comment-list" id="comment-list">
+                    <!-- Comments will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <div id="profile-page" style="display: none;">
+            <div class="profile-section">
+                <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/45cc67ec-566d-4a4c-a8a7-d84b13d78eac.png" alt="User profile picture: a detailed portrait of a person with expressive eyes, medium-length hair, wearing a shirt, in a realistic style with warm lighting and soft shadows, background is a subtle gradient" class="profile-avatar" id="profile-avatar" />
+                <div class="profile-info">
+                    <h2 id="profile-name"></h2>
+                    <p class="profile-bio" id="profile-bio"></p>
+                </div>
+            </div>
+            <h3>My Posts</h3>
+            <div class="posts-container" id="user-posts-container">
+                <!-- User posts will be loaded here -->
+            </div>
+        </div>
+
+        <div id="about-page" style="display: none;">
+            <h1>About BlogSpot</h1>
+            <p>BlogSpot is a simple yet powerful blogging platform built with HTML, CSS, and JavaScript. It allows users to share their thoughts and ideas with the world.</p>
+            
+            <h2>Features</h2>
+            <ul>
+                <li><strong>User Authentication:</strong> Secure sign up and login system.</li>
+                <li><strong>Post Management:</strong> Create, edit, and delete blog posts.</li>
+                <li><strong>Comment System:</strong> Add, edit, and delete comments on posts.</li>
+                <li><strong>Profile Management:</strong> View your profile and posts.</li>
+                <li><strong>Responsive Design:</strong> Works seamlessly on desktop, tablet, and mobile devices.</li>
+                <li><strong>Local Storage:</strong> Data persists using browser local storage.</li>
+            </ul>
+            
+            <h2>How to Use</h2>
+            <ol>
+                <li><strong>Sign Up/Login:</strong> Click on Sign Up to create an account or Login if you already have one.</li>
+                <li><strong>Create a Post:</strong> Once logged in, click the '+' button at the bottom right to create a new post.</li>
+                <li><strong>View Posts:</strong> Browse latest posts on the home page. Click 'Read More' to view details.</li>
+                <li><strong>Comment on Posts:</strong> In the post detail view, add comments below.</li>
+                <li><strong>Manage Your Content:</strong> Go to My Profile to view and edit your posts and comments.</li>
+                <li><strong>Logout:</strong> Use the dropdown menu to logout.</li>
+            </ol>
+        </div>
+
+        <div class="empty-state" id="empty-state" style="display: none;">
+            <h2>No posts found</h2>
+            <p>There are no posts to display right now. Check back later or create your own post!</p>
+        </div>
+    </main>
+
+    <div class="create-post-btn" id="create-post-btn" style="display: none;">
+        <span>+</span>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal" id="login-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Login</h2>
+                <span class="close-btn" id="close-login">&times;</span>
+            </div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-username">Username</label>
+                    <input type="text" id="login-username" required>
+                    <div class="error-message" id="login-username-error"></div>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required>
+                    <div class="error-message" id="login-password-error"></div>
+                </div>
+                <button type="submit" class="btn-primary">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div class="modal" id="signup-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create Account</h2>
+                <span class="close-btn" id="close-signup">&times;</span>
+            </div>
+            <form id="signup-form">
+                <div class="form-group">
+                    <label for="signup-username">Username</label>
+                    <input type="text" id="signup-username" required>
+                    <div class="error-message" id="signup-username-error"></div>
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email</label>
+                    <input type="email" id="signup-email" required>
+                    <div class="error-message" id="signup-email-error"></div>
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" required>
+                    <div class="error-message" id="signup-password-error"></div>
+                </div>
+                <button type="submit" class="btn-primary">Sign Up</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create/Edit Post Modal -->
+    <div class="modal" id="post-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="post-modal-title">Create Post</h2>
+                <span class="close-btn" id="close-post">&times;</span>
+            </div>
+            <form id="post-form">
+                <div class="form-group">
+                    <label for="post-title">Title</label>
+                    <input type="text" id="post-title" required>
+                    <div class="error-message" id="post-title-error"></div>
+                </div>
+                <div class="form-group">
+                    <label for="post-content">Content</label>
+                    <textarea id="post-content" required></textarea>
+                    <div class="error-message" id="post-content-error"></div>
+                </div>
+                <div class="form-group">
+                    <label for="post-image-url">Image URL (optional)</label>
+                    <input type="url" id="post-image-url">
+                    <div class="error-message" id="post-image-error"></div>
+                </div>
+                <input type="hidden" id="post-id">
+                <button type="submit" class="btn-primary">Save Post</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Simulated database using localStorage
+        const STORAGE_KEYS = {
+            USERS: 'blog_users',
+            POSTS: 'blog_posts',
+            CURRENT_USER: 'current_user'
+        };
+
+        // Helper functions
+        function getFromStorage(key) {
+            return JSON.parse(localStorage.getItem(key)) || [];
+        }
+
+        function saveToStorage(key, data) {
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+
+        // User Management
+        let users = getFromStorage(STORAGE_KEYS.USERS);
+        let currentUser = getFromStorage(STORAGE_KEYS.CURRENT_USER)[0] || null;
+
+        // Posts and Comments
+        let posts = getFromStorage(STORAGE_KEYS.POSTS);
+
+        // Initial sample data if empty
+        if (users.length === 0) {
+            users = [
+                { id: 1, username: 'admin', email: 'admin@example.com', password: 'password', bio: 'Admin user', avatar: 'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/2d0251bc-6eee-40ae-a4f9-5415909466c7.png' }
+            ];
+            saveToStorage(STORAGE_KEYS.USERS, users);
+        }
+
+        if (posts.length === 0) {
+            posts = [
+                {
+                    id: 1,
+                    title: 'Welcome to BlogSpot',
+                    content: 'This is your go-to platform for sharing ideas and thoughts.',
+                    authorId: 1,
+                    authorName: 'admin',
+                    date: new Date().toISOString(),
+                    image: 'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/b84e4b5b-48d9-416c-8d66-6096fd6cbdaa.png',
+                    comments: []
+                }
+            ];
+            saveToStorage(STORAGE_KEYS.POSTS, posts);
+        }
+
+        // DOM Elements
+        const elements = {
+            authButtons: document.getElementById('auth-buttons'),
+            userDropdown: document.getElementById('user-dropdown'),
+            usernameDisplay: document.getElementById('username-display'),
+            userAvatar: document.getElementById('user-avatar'),
+            dropdownMenu: document.getElementById('dropdown-menu'),
+            createPostBtn: document.getElementById('create-post-btn'),
+            homePage: document.getElementById('home-page'),
+            postDetailPage: document.getElementById('post-detail-page'),
+            profilePage: document.getElementById('profile-page'),
+            aboutPage: document.getElementById('about-page'),
+            postsContainer: document.getElementById('posts-container'),
+            postDetail: document.getElementById('post-detail'),
+            commentList: document.getElementById('comment-list'),
+            userPostsContainer: document.getElementById('user-posts-container'),
+            emptyState: document.getElementById('empty-state'),
+            profileName: document.getElementById('profile-name'),
+            profileBio: document.getElementById('profile-bio'),
+            profileAvatar: document.getElementById('profile-avatar'),
+            loginModal: document.getElementById('login-modal'),
+            signupModal: document.getElementById('signup-modal'),
+            postModal: document.getElementById('post-modal'),
+            postModalTitle: document.getElementById('post-modal-title'),
+            commentForm: document.getElementById('comment-form'),
+            commentText: document.getElementById('comment-text'),
+            postForm: document.getElementById('post-form'),
+            postTitleInput: document.getElementById('post-title'),
+            postContentInput: document.getElementById('post-content'),
+            postImageUrl: document.getElementById('post-image-url'),
+            postIdInput: document.getElementById('post-id')
+        };
+
+        // Functions
+        function showElement(el) {
+            el.style.display = 'block';
+        }
+
+        function hideElement(el) {
+            el.style.display = 'none';
+        }
+
+        function updateUI() {
+            if (currentUser) {
+                hideElement(elements.authButtons);
+                showElement(elements.userDropdown);
+                elements.usernameDisplay.textContent = currentUser.username;
+                elements.userAvatar.src = currentUser.avatar || 'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/8bc62931-a2bd-43aa-b182-fad8b06218a5.png';
+                showElement(elements.createPostBtn);
+            } else {
+                showElement(elements.authButtons);
+                hideElement(elements.userDropdown);
+                hideElement(elements.createPostBtn);
+            }
+            showHomePage();
+        }
+
+        function showHomePage() {
+            hideElement(elements.postDetailPage);
+            hideElement(elements.profilePage);
+            hideElement(elements.aboutPage);
+            showElement(elements.homePage);
+            renderPosts(posts, elements.postsContainer);
+        }
+
+        function showAboutPage() {
+            hideElement(elements.homePage);
+            hideElement(elements.postDetailPage);
+            hideElement(elements.profilePage);
+            showElement(elements.aboutPage);
+        }
+
+        function showPostDetail(postId) {
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+
+            hideElement(elements.homePage);
+            hideElement(elements.profilePage);
+            hideElement(elements.aboutPage);
+            showElement(elements.postDetailPage);
+
+            elements.postDetail.innerHTML = `
+                <img src="${post.image || 'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/7f087456-0605-4922-a1c1-f3f3be9c87e4.png'}" alt="Post featured image: a scenic landscape with mountains and a lake, in vibrant colors, high resolution, showing natural beauty and tranquility" class="post-image" onerror="this.src='https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/64977098-99ca-416f-b20c-149537880c82.png'; this.onerror=null;" />
+                <h1>${post.title}</h1>
+                <div class="post-meta">
+                    <span class="post-author">${post.authorName}</span>
+                    <span>${new Date(post.date).toLocaleDateString()}</span>
+                </div>
+                <div class="post-body">${post.content}</div>
+                ${currentUser && currentUser.id === post.authorId ? `
+                    <div class="post-actions">
+                        <button class="btn-success" onclick="editPost(${post.id})">Edit</button>
+                        <button class="btn-danger" onclick="deletePost(${post.id})">Delete</button>
+                    </div>
+                ` : ''}
+            `;
+
+            renderComments(post.comments, post.id);
+            if (currentUser) {
+                showElement(elements.commentForm);
+            } else {
+                hideElement(elements.commentForm);
+            }
+        }
+
+        function renderPosts(postList, container) {
+            container.innerHTML = '';
+            if (postList.length === 0) {
+                showElement(elements.emptyState);
+                return;
+            }
+            hideElement(elements.emptyState);
+
+            postList.forEach(post => {
+                const card = document.createElement('div');
+                card.className = 'post-card';
+                card.innerHTML = `
+                    <img src="${post.image || 'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/4b88c8ce-e883-484c-94e0-485d21ce2a0b.png'}" alt="Post thumbnail: a compact version of the featured image, showing key elements like main subject in focus, with balanced composition and colors" class="post-image" onerror="this.src='https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/f921e943-22fd-4ef0-a687-bb5f59747cd6.png'; this.onerror=null;" />
+                    <div class="post-content">
+                        <h2 class="post-title">${post.title}</h2>
+                        <div class="post-meta">
+                            <span class="post-author">${post.authorName}</span>
+                            <span>${new Date(post.date).toLocaleDateString()}</span>
+                        </div>
+                        <p class="post-excerpt">${post.content.substring(0, 100)}...</p>
+                    </div>
+                    <div class="post-actions">
+                        <button class="btn-primary" onclick="showPostDetail(${post.id})">Read More</button>
+                        <span class="comment-count">${post.comments.length} Comments</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderComments(comments, postId) {
+            elements.commentList.innerHTML = '';
+            comments.forEach(comment => {
+                const commentEl = document.createElement('div');
+                commentEl.className = 'comment';
+                commentEl.innerHTML = `
+                    <div class="comment-meta">
+                        <span class="comment-author">${comment.authorName}</span>
+                        <span>${new Date(comment.date).toLocaleDateString()}</span>
+                    </div>
+                    <p class="comment-text">${comment.text}</p>
+                    ${currentUser && currentUser.id === comment.authorId ? `
+                        <div class="comment-actions">
+                            <button onclick="editComment(${postId}, ${comment.id})">Edit</button>
+                            <button onclick="deleteComment(${postId}, ${comment.id})">Delete</button>
+                        </div>
+                    ` : ''}
+                `;
+                elements.commentList.appendChild(commentEl);
+            });
+        }
+
+        function showProfile() {
+            hideElement(elements.homePage);
+            hideElement(elements.postDetailPage);
+            hideElement(elements.aboutPage);
+            showElement(elements.profilePage);
+
+            elements.profileName.textContent = currentUser.username;
+            elements.profileBio.textContent = currentUser.bio || 'No bio yet';
+            elements.profileAvatar.src = currentUser.avatar || 'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/7ab0ca11-ffe7-4fff-8f55-8e820ec5f9b8.png';
+
+            const userPosts = posts.filter(p => p.authorId === currentUser.id);
+            renderPosts(userPosts, elements.userPostsContainer);
+        }
+
+        // Authentication
+        function signup(username, email, password) {
+            if (users.some(u => u.username === username || u.email === email)) {
+                return 'User already exists';
+            }
+            const newUser = {
+                id: users.length + 1,
+                username,
+                email,
+                password,
+                bio: '',
+                avatar: 'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/87edbae6-873f-4fcc-9fb9-a058d4b59d29.png'
+            };
+            users.push(newUser);
+            saveToStorage(STORAGE_KEYS.USERS, users);
+            return null;
+        }
+
+        function login(username, password) {
+            const user = users.find(u => u.username === username && u.password === password);
+            if (user) {
+                currentUser = user;
+                saveToStorage(STORAGE_KEYS.CURRENT_USER, [user]);
+                return null;
+            }
+            return 'Invalid credentials';
+        }
+
+        function logout() {
+            currentUser = null;
+            saveToStorage(STORAGE_KEYS.CURRENT_USER, []);
+            updateUI();
+        }
+
+        // Post Management
+        function createPost(title, content, image) {
+            const newPost = {
+                id: posts.length + 1,
+                title,
+                content,
+                authorId: currentUser.id,
+                authorName: currentUser.username,
+                date: new Date().toISOString(),
+                image: image || 'https://placehold.co/1200x600',
+                comments: []
+            };
+            posts.push(newPost);
+            saveToStorage(STORAGE_KEYS.POSTS, posts);
+        }
+
+        function editPost(postId) {
+            const post = posts.find(p => p.id === postId);
+            if (!post || post.authorId !== currentUser.id) return;
+
+            elements.postModalTitle.textContent = 'Edit Post';
+            elements.postTitleInput.value = post.title;
+            elements.postContentInput.value = post.content;
+            elements.postImageUrl.value = post.image;
+            elements.postIdInput.value = postId;
+            showElement(elements.postModal);
+        }
+
+        function savePost() {
+            const id = parseInt(elements.postIdInput.value);
+            const title = elements.postTitleInput.value;
+            const content = elements.postContentInput.value;
+            const image = elements.postImageUrl.value;
+
+            if (id) {
+                const post = posts.find(p => p.id === id);
+                if (post && post.authorId === currentUser.id) {
+                    post.title = title;
+                    post.content = content;
+                    post.image = image || post.image;
+                    post.date = new Date().toISOString();
+                }
+            } else {
+                createPost(title, content, image);
+            }
+            saveToStorage(STORAGE_KEYS.POSTS, posts);
+            hideElement(elements.postModal);
+            updateUI();
+        }
+
+        function deletePost(postId) {
+            const post = posts.find(p => p.id === postId);
+            if (post && post.authorId === currentUser.id) {
+                posts = posts.filter(p => p.id !== postId);
+                saveToStorage(STORAGE_KEYS.POSTS, posts);
+                updateUI();
+            }
+        }
+
+        // Comment Management
+        function addComment(postId, text) {
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+
+            const newComment = {
+                id: post.comments.length + 1,
+                text,
+                authorId: currentUser.id,
+                authorName: currentUser.username,
+                date: new Date().toISOString()
+            };
+            post.comments.push(newComment);
+            saveToStorage(STORAGE_KEYS.POSTS, posts);
+        }
+
+        function editComment(postId, commentId) {
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+
+            const comment = post.comments.find(c => c.id === commentId);
+            if (comment && comment.authorId === currentUser.id) {
+                const newText = prompt('Edit your comment:', comment.text);
+                if (newText) {
+                    comment.text = newText;
+                    comment.date = new Date().toISOString();
+                    saveToStorage(STORAGE_KEYS.POSTS, posts);
+                    showPostDetail(postId);
+                }
+            }
+        }
+
+        function deleteComment(postId, commentId) {
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+
+            const comment = post.comments.find(c => c.id === commentId);
+            if (comment && comment.authorId === currentUser.id) {
+                post.comments = post.comments.filter(c => c.id !== commentId);
+                saveToStorage(STORAGE_KEYS.POSTS, posts);
+                showPostDetail(postId);
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('login-btn').addEventListener('click', () => showElement(elements.loginModal));
+        document.getElementById('signup-btn').addEventListener('click', () => showElement(elements.signupModal));
+        document.getElementById('close-login').addEventListener('click', () => hideElement(elements.loginModal));
+        document.getElementById('close-signup').addEventListener('click', () => hideElement(elements.signupModal));
+        document.getElementById('close-post').addEventListener('click', () => hideElement(elements.postModal));
+
+        elements.loginForm.addEventListener('submit', e => {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            const error = login(username, password);
+            if (error) {
+                alert(error);
+            } else {
+                hideElement(elements.loginModal);
+                updateUI();
+            }
+        });
+
+        elements.signupForm.addEventListener('submit', e => {
+            e.preventDefault();
+            const username = document.getElementById('signup-username').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const error = signup(username, email, password);
+            if (error) {
+                alert(error);
+            } else {
+                hideElement(elements.signupModal);
+                alert('Account created! Please login.');
+            }
+        });
+
+        elements.userDropdownToggle.addEventListener('click', () => {
+            elements.dropdownMenu.classList.toggle('show');
+        });
+
+        document.getElementById('logout-link').addEventListener('click', e => {
+            e.preventDefault();
+            logout();
+        });
+
+        document.getElementById('profile-link').addEventListener('click', e => {
+            e.preventDefault();
+            elements.dropdownMenu.classList.remove('show');
+            showProfile();
+        });
+
+        document.getElementById('my-posts-link').addEventListener('click', e => {
+            e.preventDefault();
+            elements.dropdownMenu.classList.remove('show');
+            showProfile();
+        });
+
+        document.getElementById('home-link').addEventListener('click', e => {
+            e.preventDefault();
+            showHomePage();
+        });
+
+        // Explore and About can be placeholders
+        document.getElementById('explore-link').addEventListener('click', e => {
+            e.preventDefault();
+            alert('Explore feature coming soon!');
+        });
+
+        document.getElementById('about-link').addEventListener('click', e => {
+            e.preventDefault();
+            showAboutPage();
+        });
+
+        elements.createPostBtn.addEventListener('click', () => {
+            elements.postModalTitle.textContent = 'Create Post';
+            elements.postTitleInput.value = '';
+            elements.postContentInput.value = '';
+            elements.postImageUrl.value = '';
+            elements.postIdInput.value = '';
+            showElement(elements.postModal);
+        });
+
+        elements.postForm.addEventListener('submit', e => {
+            e.preventDefault();
+            savePost();
+        });
+
+        elements.commentForm.addEventListener('submit', e => {
+            e.preventDefault();
+            const text = elements.commentText.value;
+            if (text) {
+                const postId = parseInt(elements.postDetail.dataset.postId || '0'); // Assume we set this when showing detail
+                addComment(postId, text);
+                elements.commentText.value = '';
+                showPostDetail(postId);
+            }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', e => {
+            if (!elements.userDropdown.contains(e.target)) {
+                elements.dropdownMenu.classList.remove('show');
+            }
+        });
+
+        // Close modals when clicking outside
+        [elements.loginModal, elements.signupModal, elements.postModal].forEach(modal => {
+            modal.addEventListener('click', e => {
+                if (e.target === modal) {
+                    hideElement(modal);
+                }
+            });
+        });
+
+        // Initial update
+        updateUI();
+
+        // Make functions global for onclick
+        window.showPostDetail = showPostDetail;
+        window.editPost = editPost;
+        window.deletePost = deletePost;
+        window.editComment = editComment;
+        window.deleteComment = deleteComment;
+    </script>
+</body>
+</html>
+
