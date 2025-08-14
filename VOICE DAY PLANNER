@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day Planner with Voice Commands</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        background: #f4f4f4;
+    }
+    header {
+        background: #2c3e50;
+        color: white;
+        padding: 10px;
+        text-align: center;
+    }
+    #motivation {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: #ecf0f1;
+        padding: 15px;
+    }
+    #motivation img {
+        width: 100%;
+        max-width: 500px;
+        border-radius: 8px;
+    }
+    .planner {
+        display: grid;
+        grid-template-columns: 1fr 2fr 1fr;
+        gap: 10px;
+        padding: 15px;
+    }
+    .time-slot {
+        padding: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        min-height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: bold;
+        color: #222;
+    }
+    .task-text {
+        font-weight: normal;
+        margin-left: 10px;
+        cursor: pointer;
+        padding: 4px 6px;
+        border-radius: 3px;
+    }
+    .task-stats {
+        background: white;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 15px;
+    }
+    button {
+        background: #27ae60;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        cursor: pointer;
+        border-radius: 5px;
+        margin-top: 5px;
+    }
+    button:hover {
+        background: #2ecc71;
+    }
+    .completed {
+        text-decoration: line-through;
+        background: #a5d6a7;
+    }
+    .in-progress {
+        background: #ffe082;
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>📅 My Day Planner</h1>
+    <button onclick="startVoiceCommand()">🎤 Add Task by Voice</button>
+</header>
+
+<section id="motivation">
+    <h2>💡 Daily Motivation</h2>
+    <img id="motivationImage" src="" alt="Motivation">
+    <p id="motivationText"></p>
+</section>
+
+<div class="task-stats">
+    <h3>📊 Task Progress</h3>
+    <p>Total Tasks: <span id="totalTasks">0</span></p>
+    <p>Completed: <span id="completedTasks">0</span></p>
+    <p>In Progress: <span id="inProgressTasks">0</span></p>
+    <p>Progress: <span id="progressPercent">0%</span></p>
+</div>
+
+<div class="planner" id="planner"></div>
+
+<script>
+    // Brighter colors for slots
+    const colors = [
+        "#FF5733", "#FF8D1A", "#FFC300", "#DAF7A6", "#33FF57", "#1AFFD5",
+        "#33C1FF", "#335BFF", "#8E33FF", "#FF33E3", "#FF337A", "#FF6666",
+        "#FFB266", "#FFFF66", "#B2FF66", "#66FFB2", "#66FFFF", "#66B2FF",
+        "#B266FF", "#FF66FF", "#FF66B2", "#FF9999", "#FFD699", "#FFFF99"
+    ];
+
+    const planner = document.getElementById("planner");
+    const hours = Array.from({ length: 24 }, (_, i) => {
+        let hour = i % 12 || 12;
+        let ampm = i < 12 ? "AM" : "PM";
+        return `${hour}:00 ${ampm}`;
+    });
+
+    let tasks = [];
+
+    function renderPlanner() {
+        planner.innerHTML = "";
+        hours.forEach((time, index) => {
+            let slot = document.createElement("div");
+            slot.className = "time-slot";
+            slot.style.background = colors[index % colors.length];
+
+            let timeLabel = document.createElement("span");
+            timeLabel.textContent = time;
+
+            let taskInfo = document.createElement("span");
+            taskInfo.className = "task-text";
+
+            let task = tasks.find(t => t.time === time);
+            if (task) {
+                taskInfo.textContent = `${task.text} (${task.status})`;
+                taskInfo.classList.add(task.status === "completed" ? "completed" : "in-progress");
+                taskInfo.onclick = (e) => {
+                    e.stopPropagation();
+                    toggleTaskStatus(time);
+                };
+            } else {
+                taskInfo.textContent = "➕ Add Task";
+                taskInfo.className = "task-text";
+                taskInfo.onclick = (e) => {
+                    e.stopPropagation();
+                    addTaskPrompt(time);
+                };
+            }
+
+            slot.appendChild(timeLabel);
+            slot.appendChild(taskInfo);
+            slot.onclick = () => addTaskPrompt(time);
+
+            planner.appendChild(slot);
+        });
+        updateStats();
+    }
+
+    function addTaskPrompt(time) {
+        let text = prompt(`Enter task for ${time}:`);
+        if (text) {
+            let existing = tasks.find(t => t.time === time);
+            if (existing) {
+                existing.text = text;
+                existing.status = "in progress";
+            } else {
+                tasks.push({ time, text, status: "in progress" });
+            }
+            renderPlanner();
+        }
+    }
+
+    function toggleTaskStatus(time) {
+        let task = tasks.find(t => t.time === time);
+        if (task) {
+            task.status = task.status === "completed" ? "in progress" : "completed";
+            renderPlanner();
+        }
+    }
+
+    function updateStats() {
+        document.getElementById("totalTasks").textContent = tasks.length;
+        let completed = tasks.filter(t => t.status === "completed").length;
+        let inProgress = tasks.filter(t => t.status === "in progress").length;
+        document.getElementById("completedTasks").textContent = completed;
+        document.getElementById("inProgressTasks").textContent = inProgress;
+        let progress = tasks.length ? Math.round((completed / tasks.length) * 100) : 0;
+        document.getElementById("progressPercent").textContent = `${progress}%`;
+    }
+
+    function startVoiceCommand() {
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'en-US';
+        recognition.start();
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            let time = prompt("Enter the time for this task (e.g., 2:00 PM):");
+            if (time) {
+                tasks.push({ time, text: transcript, status: "in progress" });
+                renderPlanner();
+            }
+        };
+    }
+
+    function loadDailyMotivation() {
+        // Stable, working image URLs
+        const images = [
+            { src: "https://picsum.photos/id/1011/600/400", text: "Push yourself, because no one else will!" },
+            { src: "https://picsum.photos/id/1015/600/400", text: "Dream big. Work hard. Stay focused." },
+            { src: "https://picsum.photos/id/1024/600/400", text: "Your limitation—it's only your imagination." },
+            { src: "https://picsum.photos/id/1035/600/400", text: "Do something today that your future self will thank you for." },
+            { src: "https://picsum.photos/id/1043/600/400", text: "Great things never come from comfort zones." }
+        ];
+
+        let index = new Date().getDate() % images.length;
+        let imgElement = document.getElementById("motivationImage");
+        imgElement.src = images[index].src;
+        imgElement.alt = "Motivational Image";
+        document.getElementById("motivationText").textContent = images[index].text;
+
+        imgElement.onerror = function() {
+            imgElement.src = "https://via.placeholder.com/600x400?text=Stay+Motivated!";
+            document.getElementById("motivationText").textContent = "Stay strong. Keep going.";
+        };
+    }
+
+    loadDailyMotivation();
+    renderPlanner();
+</script>
+</body>
+</html>
